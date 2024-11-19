@@ -61,11 +61,13 @@ iface9 = node_dest_router.addInterface('interface-10', pg.IPv4Address('10.0.13.1
 
 # Node dest-l4s
 node_dest_l4s = request.RawPC('dest-l4s')
+node_dest_l4s.hardware_type = 'd430'
 node_dest_l4s.disk_image = "urn:publicid:IDN+emulab.net+image+emulab-ops//UBUNTU22-64-STD";
 iface10 = node_dest_l4s.addInterface('interface-9', pg.IPv4Address('10.0.13.4','255.255.255.0'))
 
 # Node dest-classic
 node_dest_classic = request.RawPC('dest-classic')
+node_dest_classic.hardware_type = 'd430'
 node_dest_classic.disk_image = "urn:publicid:IDN+emulab.net+image+emulab-ops//UBUNTU22-64-STD";
 iface11 = node_dest_classic.addInterface('interface-11', pg.IPv4Address('10.0.13.3','255.255.255.0'))
 
