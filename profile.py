@@ -23,6 +23,7 @@ node_source_classic = request.RawPC('source-classic')
 node_source_classic.hardware_type = 'd430'
 node_source_classic.disk_image = "urn:publicid:IDN+emulab.net+image+emulab-ops//UBUNTU22-64-STD";
 iface0 = node_source_classic.addInterface('interface-2', pg.IPv4Address('10.0.10.3','255.255.255.0'))
+node_source_classic.addService(pg.Execute(shell="bash", command='sudo ip -6 addr add 2001:db8:12::1/64 dev $(ip route get 10.0.10.1 | grep -oP "(?<=dev )[^ ]+")'))
 
 # Node source-l4s
 node_source_l4s = request.RawPC('source-l4s')
