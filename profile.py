@@ -81,6 +81,9 @@ iface3.addAddress(pg.IPv4Address('10.0.11.1','255.255.255.0'))
 # Assign IPv6 Address
 assign_ipv6(node_source_router, '2001:db8:11::1', '10.0.11.3')
 run_enable_srv6(node_source_router)
+node_source_router.addService(pg.Execute(shell="bash", command="chmod +x /local/repository/srv6_setup.sh"))
+node_source_router.addService(pg.Execute(shell="bash", command="sudo bash /local/repository/srv6_setup.sh"))
+
 
 # Enable IPv6 forwarding
 node_source_router.addService(pg.Execute(shell="bash", command="sudo sysctl -w net.ipv6.conf.all.forwarding=1"))
@@ -90,8 +93,7 @@ node_source_router.addService(pg.Execute(shell="bash", command="sudo ip -6 route
 
 enable_srv6(node_source_router)
 
-node_source_router.addService(pg.Execute(shell="bash", command="chmod +x /local/repository/srv6_setup.sh"))
-node_source_router.addService(pg.Execute(shell="bash", command="sudo bash /local/repository/srv6_setup.sh"))
+
 
 
 
