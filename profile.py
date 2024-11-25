@@ -24,7 +24,7 @@ def assign_ipv6(node, ipv6_addr, ipv4_target):
 
 # Node source-classic
 node_source_classic = request.RawPC('source-classic')
-node_source_classic.hardware_type = 'd430'
+node_source_classic.hardware_type = 'd710'
 node_source_classic.disk_image = "urn:publicid:IDN+emulab.net+image+emulab-ops//UBUNTU22-64-STD"
 iface0 = node_source_classic.addInterface('interface-2')
 iface0.addAddress(pg.IPv4Address('10.0.10.3','255.255.255.0'))
@@ -46,7 +46,7 @@ node_source_l4s.addService(pg.Execute(shell="bash", command="sudo ip -6 route ad
 
 # Node source-router
 node_source_router = request.RawPC('source-router')
-node_source_router.hardware_type = 'd430'
+node_source_router.hardware_type = 'd710'
 node_source_router.disk_image = "urn:publicid:IDN+emulab.net+image+emulab-ops//UBUNTU22-64-STD"
 iface2 = node_source_router.addInterface('interface-1')
 iface2.addAddress(pg.IPv4Address('10.0.10.1','255.255.255.0'))
@@ -64,7 +64,7 @@ node_source_router.addService(pg.Execute(shell="bash", command="sudo ip -6 route
 
 # Node middle-l4s
 node_middle_l4s = request.RawPC('middle-l4s')
-node_middle_l4s.hardware_type = 'd430'
+node_middle_l4s.hardware_type = 'd710'
 node_middle_l4s.disk_image = "urn:publicid:IDN+emulab.net+image+emulab-ops//UBUNTU22-64-STD"
 iface4 = node_middle_l4s.addInterface('interface-4')
 iface4.addAddress(pg.IPv4Address('10.0.11.4','255.255.255.0'))
@@ -82,7 +82,7 @@ node_middle_l4s.addService(pg.Execute(shell="bash", command="sudo ip -6 route ad
 
 # Node middle-classic
 node_middle_classic = request.RawPC('middle-classic')
-node_middle_classic.hardware_type = 'd430'
+node_middle_classic.hardware_type = 'd710'
 node_middle_classic.disk_image = "urn:publicid:IDN+emulab.net+image+emulab-ops//UBUNTU22-64-STD"
 iface6 = node_middle_classic.addInterface('interface-5')
 iface6.addAddress(pg.IPv4Address('10.0.11.3','255.255.255.0'))
@@ -100,7 +100,7 @@ node_middle_classic.addService(pg.Execute(shell="bash", command="sudo ip -6 rout
 
 # Node dest-router
 node_dest_router = request.RawPC('dest-router')
-node_dest_router.hardware_type = 'd430'
+node_dest_router.hardware_type = 'd710'
 node_dest_router.disk_image = "urn:publicid:IDN+emulab.net+image+emulab-ops//UBUNTU22-64-STD"
 iface8 = node_dest_router.addInterface('interface-7')
 iface8.addAddress(pg.IPv4Address('10.0.12.1','255.255.255.0'))
@@ -118,7 +118,7 @@ node_dest_router.addService(pg.Execute(shell="bash", command="sudo ip -6 route a
 
 # Node dest-l4s
 node_dest_l4s = request.RawPC('dest-l4s')
-node_dest_l4s.hardware_type = 'd430'
+node_dest_l4s.hardware_type = 'd710'
 node_dest_l4s.disk_image = "urn:publicid:IDN+emulab.net+image+emulab-ops//UBUNTU22-64-STD"
 iface10 = node_dest_l4s.addInterface('interface-9')
 iface10.addAddress(pg.IPv4Address('10.0.13.4','255.255.255.0'))
@@ -129,7 +129,7 @@ node_dest_l4s.addService(pg.Execute(shell="bash", command="sudo ip -6 route add 
 
 # Node dest-classic
 node_dest_classic = request.RawPC('dest-classic')
-node_dest_classic.hardware_type = 'd430'
+node_dest_classic.hardware_type = 'd710'
 node_dest_classic.disk_image = "urn:publicid:IDN+emulab.net+image+emulab-ops//UBUNTU22-64-STD"
 iface11 = node_dest_classic.addInterface('interface-11')
 iface11.addAddress(pg.IPv4Address('10.0.13.3','255.255.255.0'))
