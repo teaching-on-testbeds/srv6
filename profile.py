@@ -35,10 +35,11 @@ def enable_srv6(node):
         node.addService(pg.Execute(shell="bash", command=cmd))
 
 def run_enable_srv6(node):
-    # Ensure the script is executable
-    node.addService(pg.Execute(shell="bash", command="chmod +x /local/repository/enable_srv6.sh"))
-    # Execute the script
-    node.addService(pg.Execute(shell="bash", command="sudo bash /local/repository/enable_srv6.sh"))
+    # Ensure the script is executable and exists before execution
+    node.addService(pg.Execute(shell="bash", command="test -f /local/repository/enable_srv6.sh && chmod +x /local/repository/enable_srv6.sh"))
+    # Execute the script only if the previous command succeeded
+    node.addService(pg.Execute(shell="bash", command="test -f /local/repository/enable_srv6.sh && sudo bash /local/repository/enable_srv6.sh"))
+
 
 # Node source-classic
 node_source_classic = request.RawPC('source-classic')
@@ -50,6 +51,9 @@ iface0.addAddress(pg.IPv4Address('10.0.10.3','255.255.255.0'))
 assign_ipv6(node_source_classic, '2001:db8:10::3', '10.0.10.1')
 # Set default IPv6 route via source-router
 node_source_classic.addService(pg.Execute(shell="bash", command="sudo ip -6 route add default via 2001:db8:10::1"))
+run_enable_srv6(node_source_classic)
+
+
 
 # Node source-l4s
 node_source_l4s = request.RawPC('source-l4s')
@@ -59,6 +63,8 @@ iface1 = node_source_l4s.addInterface('interface-0')
 iface1.addAddress(pg.IPv4Address('10.0.10.4','255.255.255.0'))
 # Assign IPv6 Address
 assign_ipv6(node_source_l4s, '2001:db8:10::4', '10.0.10.1')
+run_enable_srv6(node_source_l4s)
+
 # Set default IPv6 route via source-router
 node_source_l4s.addService(pg.Execute(shell="bash", command="sudo ip -6 route add default via 2001:db8:10::1"))
 
@@ -74,6 +80,8 @@ iface3 = node_source_router.addInterface('interface-3')
 iface3.addAddress(pg.IPv4Address('10.0.11.1','255.255.255.0'))
 # Assign IPv6 Address
 assign_ipv6(node_source_router, '2001:db8:11::1', '10.0.11.3')
+run_enable_srv6(node_source_router)
+
 # Enable IPv6 forwarding
 node_source_router.addService(pg.Execute(shell="bash", command="sudo sysctl -w net.ipv6.conf.all.forwarding=1"))
 # Add static IPv6 routes
@@ -115,6 +123,9 @@ iface5 = node_middle_l4s.addInterface('interface-6')
 iface5.addAddress(pg.IPv4Address('10.0.12.4','255.255.255.0'))
 # Assign IPv6 Address
 assign_ipv6(node_middle_l4s, '2001:db8:12::4', '10.0.12.1')
+
+run_enable_srv6(node_middle_l4s)
+
 # Enable IPv6 forwarding
 node_middle_l4s.addService(pg.Execute(shell="bash", command="sudo sysctl -w net.ipv6.conf.all.forwarding=1"))
 # Add static IPv6 routes
@@ -136,6 +147,9 @@ iface7 = node_middle_classic.addInterface('interface-8')
 iface7.addAddress(pg.IPv4Address('10.0.12.3','255.255.255.0'))
 # Assign IPv6 Address
 assign_ipv6(node_middle_classic, '2001:db8:12::3', '10.0.12.1')
+
+run_enable_srv6(node_middle_classic)
+
 # Enable IPv6 forwarding
 node_middle_classic.addService(pg.Execute(shell="bash", command="sudo sysctl -w net.ipv6.conf.all.forwarding=1"))
 # Add static IPv6 routes
@@ -157,6 +171,9 @@ iface9 = node_dest_router.addInterface('interface-10')
 iface9.addAddress(pg.IPv4Address('10.0.13.1','255.255.255.0'))
 # Assign IPv6 Address
 assign_ipv6(node_dest_router, '2001:db8:13::1', '10.0.13.3')
+
+run_enable_srv6(node_dest_router)
+
 # Enable IPv6 forwarding
 node_dest_router.addService(pg.Execute(shell="bash", command="sudo sysctl -w net.ipv6.conf.all.forwarding=1"))
 # Add static IPv6 routes
@@ -174,6 +191,10 @@ iface10 = node_dest_l4s.addInterface('interface-9')
 iface10.addAddress(pg.IPv4Address('10.0.13.4','255.255.255.0'))
 # Assign IPv6 Address
 assign_ipv6(node_dest_l4s, '2001:db8:13::4', '10.0.13.1')
+
+run_enable_srv6(node_dest_l4s)
+
+
 # Set default IPv6 route via dest-router
 node_dest_l4s.addService(pg.Execute(shell="bash", command="sudo ip -6 route add default via 2001:db8:13::1"))
 enable_srv6(node_dest_l4s)
@@ -187,19 +208,15 @@ iface11 = node_dest_classic.addInterface('interface-11')
 iface11.addAddress(pg.IPv4Address('10.0.13.3','255.255.255.0'))
 # Assign IPv6 Address
 assign_ipv6(node_dest_classic, '2001:db8:13::3', '10.0.13.1')
+
+run_enable_srv6(node_dest_classic)
+
 # Set default IPv6 route via dest-router
 node_dest_classic.addService(pg.Execute(shell="bash", command="sudo ip -6 route add default via 2001:db8:13::1"))
 enable_srv6(node_dest_classic)
 
 
-run_enable_srv6(node_source_classic)
-run_enable_srv6(node_source_l4s)
-run_enable_srv6(node_source_router)
-run_enable_srv6(node_middle_l4s)
-run_enable_srv6(node_middle_classic)
-run_enable_srv6(node_dest_router)
-run_enable_srv6(node_dest_l4s)
-run_enable_srv6(node_dest_classic)
+
 
 # Link link-0
 link_0 = request.Link('link-0')
