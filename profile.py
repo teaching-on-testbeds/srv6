@@ -22,6 +22,18 @@ def assign_ipv6(node, ipv6_addr, ipv4_target):
     command = 'sudo ip -6 addr add {}/64 dev $(ip route get {} | grep -oP "(?<=dev )[^ ]+")'.format(ipv6_addr, ipv4_target)
     node.addService(pg.Execute(shell="bash", command=command))
 
+# Helper Function to Enable SRv6 on All Interfaces
+# here we do not not need to be selective, because it does not hurt to turn on srv6. 
+def enable_srv6(node):
+    commands = [
+        'sudo sysctl -w net.ipv6.conf.all.forwarding=1',
+        'sudo sysctl -w net.ipv6.conf.all.seg6_enabled=1',
+        'sudo sysctl -w net.ipv6.conf.default.seg6_enabled=1',
+        'for iface in $(ls /sys/class/net/ | grep -E "^[e]"); do sudo sysctl -w net.ipv6.conf.$iface.seg6_enabled=1; done'
+    ]
+    for cmd in commands:
+        node.addService(pg.Execute(shell="bash", command=cmd))
+
 # Node source-classic
 node_source_classic = request.RawPC('source-classic')
 node_source_classic.hardware_type = 'd710'
@@ -62,6 +74,24 @@ node_source_router.addService(pg.Execute(shell="bash", command="sudo sysctl -w n
 node_source_router.addService(pg.Execute(shell="bash", command="sudo ip -6 route add 2001:db8:12::/64 via 2001:db8:11::3"))
 node_source_router.addService(pg.Execute(shell="bash", command="sudo ip -6 route add 2001:db8:13::/64 via 2001:db8:11::3"))
 
+enable_srv6(node_source_router)
+
+# Delete the original route that might conflict with SRv6 routing
+node_source_router.addService(pg.Execute(shell="bash", command="sudo ip -6 route del 2001:db8:13::/64 via 2001:db8:11::3"))
+
+# For L4S Traffic
+# Add policy routing rule to use table 100 for traffic from 2001:db8:10::4
+node_source_router.addService(pg.Execute(shell="bash", command='sudo ip -6 rule add from 2001:db8:10::4 lookup 100 pref 100'))
+# Add SRv6 route to dest-l4s via middle-l4s in table 100
+node_source_router.addService(pg.Execute(shell="bash", command='sudo ip -6 route add 2001:db8:13::4/128 encap seg6 mode encap segs 2001:db8:11::4,2001:db8:12::1 dev $(ip route get 2001:db8:11::4 | grep -oP "(?<=dev )[^ ]+") table 100'))
+
+# For Classic Traffic
+# Add policy routing rule to use table 200 for traffic from 2001:db8:10::3
+node_source_router.addService(pg.Execute(shell="bash", command='sudo ip -6 rule add from 2001:db8:10::3 lookup 200 pref 110'))
+# Add SRv6 route to dest-classic via middle-classic in table 200
+node_source_router.addService(pg.Execute(shell="bash", command='sudo ip -6 route add 2001:db8:13::3/128 encap seg6 mode encap segs 2001:db8:11::3,2001:db8:12::1 dev $(ip route get 2001:db8:11::3 | grep -oP "(?<=dev )[^ ]+") table 200'))
+
+
 # Node middle-l4s
 node_middle_l4s = request.RawPC('middle-l4s')
 node_middle_l4s.hardware_type = 'd710'
@@ -79,6 +109,9 @@ node_middle_l4s.addService(pg.Execute(shell="bash", command="sudo sysctl -w net.
 # Add static IPv6 routes
 node_middle_l4s.addService(pg.Execute(shell="bash", command="sudo ip -6 route add 2001:db8:10::/64 via 2001:db8:11::1"))
 node_middle_l4s.addService(pg.Execute(shell="bash", command="sudo ip -6 route add 2001:db8:13::/64 via 2001:db8:12::1"))
+
+# Enable SRv6 on middle-l4s
+enable_srv6(node_middle_l4s)
 
 # Node middle-classic
 node_middle_classic = request.RawPC('middle-classic')
@@ -98,6 +131,9 @@ node_middle_classic.addService(pg.Execute(shell="bash", command="sudo sysctl -w 
 node_middle_classic.addService(pg.Execute(shell="bash", command="sudo ip -6 route add 2001:db8:13::/64 via 2001:db8:12::1"))
 node_middle_classic.addService(pg.Execute(shell="bash", command="sudo ip -6 route add 2001:db8:10::/64 via 2001:db8:11::1"))
 
+# Enable SRv6 on middle-classic
+enable_srv6(node_middle_classic)
+
 # Node dest-router
 node_dest_router = request.RawPC('dest-router')
 node_dest_router.hardware_type = 'd710'
@@ -116,6 +152,9 @@ node_dest_router.addService(pg.Execute(shell="bash", command="sudo sysctl -w net
 node_dest_router.addService(pg.Execute(shell="bash", command="sudo ip -6 route add 2001:db8:10::/64 via 2001:db8:12::3"))
 node_dest_router.addService(pg.Execute(shell="bash", command="sudo ip -6 route add 2001:db8:11::/64 via 2001:db8:12::3"))
 
+# Enable SRv6 on dest-router
+enable_srv6(node_dest_router)
+
 # Node dest-l4s
 node_dest_l4s = request.RawPC('dest-l4s')
 node_dest_l4s.hardware_type = 'd710'
@@ -126,6 +165,8 @@ iface10.addAddress(pg.IPv4Address('10.0.13.4','255.255.255.0'))
 assign_ipv6(node_dest_l4s, '2001:db8:13::4', '10.0.13.1')
 # Set default IPv6 route via dest-router
 node_dest_l4s.addService(pg.Execute(shell="bash", command="sudo ip -6 route add default via 2001:db8:13::1"))
+enable_srv6(node_middle_l4s)
+
 
 # Node dest-classic
 node_dest_classic = request.RawPC('dest-classic')
@@ -137,6 +178,8 @@ iface11.addAddress(pg.IPv4Address('10.0.13.3','255.255.255.0'))
 assign_ipv6(node_dest_classic, '2001:db8:13::3', '10.0.13.1')
 # Set default IPv6 route via dest-router
 node_dest_classic.addService(pg.Execute(shell="bash", command="sudo ip -6 route add default via 2001:db8:13::1"))
+enable_srv6(node_middle_l4s)
+
 
 # Link link-0
 link_0 = request.Link('link-0')
