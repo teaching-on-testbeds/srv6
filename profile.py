@@ -19,7 +19,7 @@ request = pc.makeRequestRSpec()
 
 # Helper Function to Assign IPv6 Addresses
 def assign_ipv6(node, ipv6_addr, ipv4_target):
-    command = f'sudo ip -6 addr add {ipv6_addr}/64 dev $(ip route get {ipv4_target} | grep -oP "(?<=dev )[^ ]+")'
+    command = 'sudo ip -6 addr add {}/64 dev $(ip route get {} | grep -oP "(?<=dev )[^ ]+")'.format(ipv6_addr, ipv4_target)
     node.addService(pg.Execute(shell="bash", command=command))
 
 # Node source-classic
