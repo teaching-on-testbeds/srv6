@@ -34,6 +34,12 @@ def enable_srv6(node):
     for cmd in commands:
         node.addService(pg.Execute(shell="bash", command=cmd))
 
+def run_enable_srv6(node):
+    # Ensure the script is executable
+    node.addService(pg.Execute(shell="bash", command="chmod +x /local/repository/enable_srv6.sh"))
+    # Execute the script
+    node.addService(pg.Execute(shell="bash", command="sudo bash /local/repository/enable_srv6.sh"))
+
 # Node source-classic
 node_source_classic = request.RawPC('source-classic')
 node_source_classic.hardware_type = 'd710'
@@ -77,7 +83,7 @@ node_source_router.addService(pg.Execute(shell="bash", command="sudo ip -6 route
 enable_srv6(node_source_router)
 
 node_source_router.addService(pg.Execute(shell="bash", command="chmod +x /local/repository/srv6_setup.sh"))
-node_source_router.addService(pg.Execute(shell="bash", command="/local/repository/srv6_setup.sh"))
+node_source_router.addService(pg.Execute(shell="bash", command="sudo bash /local/repository/srv6_setup.sh"))
 
 
 
@@ -185,6 +191,15 @@ assign_ipv6(node_dest_classic, '2001:db8:13::3', '10.0.13.1')
 node_dest_classic.addService(pg.Execute(shell="bash", command="sudo ip -6 route add default via 2001:db8:13::1"))
 enable_srv6(node_dest_classic)
 
+
+run_enable_srv6(node_source_classic)
+run_enable_srv6(node_source_l4s)
+run_enable_srv6(node_source_router)
+run_enable_srv6(node_middle_l4s)
+run_enable_srv6(node_middle_classic)
+run_enable_srv6(node_dest_router)
+run_enable_srv6(node_dest_l4s)
+run_enable_srv6(node_dest_classic)
 
 # Link link-0
 link_0 = request.Link('link-0')
