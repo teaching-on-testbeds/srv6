@@ -76,6 +76,9 @@ node_source_router.addService(pg.Execute(shell="bash", command="sudo ip -6 route
 
 enable_srv6(node_source_router)
 
+node_source_router.addService(pg.Execute(shell="bash", command="chmod +x /local/repository/srv6_setup.sh"))
+node_source_router.addService(pg.Execute(shell="bash", command="/local/repository/srv6_setup.sh"))
+
 
 
 # For L4S Traffic
